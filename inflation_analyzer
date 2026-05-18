@@ -1,0 +1,82 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from analyzer_base import DataAnalyzer
+
+class InflationAnalyzer(DataAnalyzer):
+    """Анализатор данных об инфляции (Вариант 10)"""
+    
+    def display_table(self):
+        """Вывод таблицы с данными об инфляции"""
+        print("\n=== Инфляция в России ===")
+        print(self.data.to_string(index=False))
+    
+    def plot_data(self, figure, canvas):
+        """Построение графика инфляции"""
+        figure.clear()
+        
+        ax = figure.add_subplot(111)
+        years = self.data['Год']
+        inflation = self.data['Инфляция_процент']
+        
+        # Используем разные цвета для роста и падения
+        colors = ['red' if x > 6 else 'green' for x in inflation]
+        ax.bar(years, inflation, color=colors, alpha=0.7)
+        ax.plot(years, inflation, 'b-', marker='o', linewidth=2, markersize=6)
+        
+        ax.axhline(y=6, color='orange', linestyle='--', label='Целевой уровень (6%)')
+        ax.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
+        
+        ax.set_xlabel('Год')
+        ax.set_ylabel('Инфляция (%)')
+        ax.set_title('Динамика инфляции в России (красный >6%, зелёный <6%)')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        figure.tight_layout()
+        canvas.draw()
+    
+    def calculate_statistics(self):
+        """Вычисление статистики по варианту 10"""
+        inflation = self.data['Инфляция_процент'].values
+        
+        max_inflation = inflation.max()
+        min_inflation = inflation.min()
+        avg_inflation = inflation.mean()
+        
+        stats_text = f"Макс. инфляция: {max_inflation:.1f}% | Мин. инфляция: {min_inflation:.1f}% | "
+        stats_text += f"Средняя: {avg_inflation:.1f}%"
+        
+        return stats_text
+    
+    def plot_forecast(self, figure, canvas, n_periods: int, window_size: int):
+        """Построение прогноза на графике"""
+        figure.clear()
+        
+        inflation = self.data['Инфляция_процент'].values
+        years = self.data['Год'].values
+        
+        forecast_values = self.forecast(n_periods, window_size)
+        forecast_years = list(range(years[-1] + 1, years[-1] + n_periods + 1))
+        
+        ax = figure.add_subplot(111)
+        ax.plot(years, inflation, 'b-', marker='o', label='Фактические данные', linewidth=2)
+        ax.plot(forecast_years, forecast_values, 'r--', marker='s', label='Прогноз (скользящая средняя)', linewidth=2)
+        
+        ax.axvspan(years[-1], forecast_years[-1], alpha=0.2, color='red', label='Прогнозируемый период')
+        
+        ax.set_xlabel('Год')
+        ax.set_ylabel('Инфляция (%)')
+        ax.set_title(f'Прогноз инфляции на {n_periods} лет (окно={window_size})')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        figure.tight_layout()
+        canvas.draw()
+    
+    def calculate_future_price(self, current_price: float, n_years: int) -> float:
+        """Рассчитать возможную стоимость товара через N лет (доп. функция для варианта 10)"""
+        inflation_forecast = self.forecast(n_years, 3)
+        future_price = current_price
+        for inf in inflation_forecast:
+            future_price *= (1 + inf / 100)
+        return future_price
