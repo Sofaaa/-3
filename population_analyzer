@@ -1,0 +1,94 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from analyzer_base import DataAnalyzer
+
+class PopulationAnalyzer(DataAnalyzer):
+    """Анализатор данных о численности населения (Вариант 5)"""
+    
+    def display_table(self):
+        """Вывод таблицы с данными о населении"""
+        print("\n=== Численность населения России ===")
+        print(self.data.to_string(index=False))
+    
+    def plot_data(self, figure, canvas):
+        """Построение графика численности населения"""
+        figure.clear()
+        
+        ax = figure.add_subplot(111)
+        years = self.data['Год']
+        population = self.data['Численность_населения_млн']
+        
+        ax.plot(years, population, 'b-', marker='o', linewidth=2, markersize=8)
+        ax.fill_between(years, population, alpha=0.3)
+        
+        # Добавляем аннотации максимума и минимума
+        max_pop = population.max()
+        min_pop = population.min()
+        max_year = years[population.idxmax()]
+        min_year = years[population.idxmin()]
+        
+        ax.annotate(f'Максимум: {max_pop} млн\n({max_year})', 
+                   xy=(max_year, max_pop), xytext=(max_year+1, max_pop+0.5),
+                   arrowprops=dict(arrowstyle='->', color='green'))
+        ax.annotate(f'Минимум: {min_pop} млн\n({min_year})', 
+                   xy=(min_year, min_pop), xytext=(min_year-2, min_pop-0.5),
+                   arrowprops=dict(arrowstyle='->', color='red'))
+        
+        ax.set_xlabel('Год')
+        ax.set_ylabel('Численность населения (млн чел)')
+        ax.set_title('Динамика численности населения России')
+        ax.grid(True, alpha=0.3)
+        
+        figure.tight_layout()
+        canvas.draw()
+    
+    def calculate_statistics(self):
+        """Вычисление статистики по варианту 5"""
+        population = self.data['Численность_населения_млн'].values
+        years = self.data['Год'].values
+        
+        max_growth_idx = None
+        max_decline_idx = None
+        max_growth = 0
+        max_decline = 0
+        
+        for i in range(1, len(population)):
+            growth_percent = ((population[i] - population[i-1]) / population[i-1]) * 100
+            
+            if growth_percent > max_growth:
+                max_growth = growth_percent
+                max_growth_idx = i
+            if growth_percent < max_decline:
+                max_decline = growth_percent
+                max_decline_idx = i
+        
+        stats_text = f"Макс. рост: {max_growth:.2f}% ({years[max_growth_idx]}) | "
+        stats_text += f"Макс. падение: {max_decline:.2f}% ({years[max_decline_idx]})"
+        
+        return stats_text
+    
+    def plot_forecast(self, figure, canvas, n_periods: int, window_size: int):
+        """Построение прогноза на графике"""
+        figure.clear()
+        
+        population = self.data['Численность_населения_млн'].values
+        years = self.data['Год'].values
+        
+        forecast_values = self.forecast(n_periods, window_size)
+        
+        forecast_years = list(range(years[-1] + 1, years[-1] + n_periods + 1))
+        
+        ax = figure.add_subplot(111)
+        ax.plot(years, population, 'b-', marker='o', label='Фактические данные', linewidth=2)
+        ax.plot(forecast_years, forecast_values, 'r--', marker='s', label='Прогноз (скользящая средняя)', linewidth=2)
+        
+        ax.axvspan(years[-1], forecast_years[-1], alpha=0.2, color='red', label='Прогнозируемый период')
+        
+        ax.set_xlabel('Год')
+        ax.set_ylabel('Численность населения (млн чел)')
+        ax.set_title(f'Прогноз численности населения на {n_periods} лет (окно={window_size})')
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        figure.tight_layout()
+        canvas.draw()
