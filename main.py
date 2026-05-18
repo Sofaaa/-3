@@ -6,8 +6,7 @@ import pandas as pd
 
 from data_loader import DataLoader
 from population_analyzer import PopulationAnalyzer
-from weather_analyzer import WeatherAnalyzer
-from inflation_analyzer import InflationAnalyzer
+from inflation_analyzer import InflationAnalyzer  # WeatherAnalyzer удалён
 
 class MainApplication:
     def __init__(self, root):
@@ -33,13 +32,11 @@ class MainApplication:
         file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.root.quit)
         
-        # Меню Варианты
+        # Меню Вариантов (только 5 и 10, без 3)
         variants_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Анализ данных", menu=variants_menu)
         variants_menu.add_command(label="Вариант 5: Численность населения", 
                                   command=self.run_population_analysis)
-        variants_menu.add_command(label="Вариант 3: Температура", 
-                                  command=self.run_weather_analysis)
         variants_menu.add_command(label="Вариант 10: Инфляция", 
                                   command=self.run_inflation_analysis)
         
@@ -82,11 +79,9 @@ class MainApplication:
     
     def display_table(self, df: pd.DataFrame):
         """Отображение DataFrame в таблице"""
-        # Очищаем текущую таблицу
         for item in self.tree.get_children():
             self.tree.delete(item)
         
-        # Настраиваем колонки
         columns = list(df.columns)
         self.tree['columns'] = columns
         self.tree['show'] = 'headings'
@@ -95,7 +90,6 @@ class MainApplication:
             self.tree.heading(col, text=col)
             self.tree.column(col, width=100)
         
-        # Добавляем строки
         for _, row in df.iterrows():
             self.tree.insert('', 'end', values=list(row))
     
@@ -129,17 +123,6 @@ class MainApplication:
         self.current_analyzer.plot_data(self.figure, self.canvas)
         stats = self.current_analyzer.calculate_statistics()
         self.info_label.config(text=f"Вариант 5 - Численность населения | {stats}")
-    
-    def run_weather_analysis(self):
-        """Запуск анализа по варианту 3"""
-        loader = DataLoader()
-        data = loader.generate_sample_weather()
-        self.current_analyzer = WeatherAnalyzer(data)
-        self.current_data = data
-        self.display_table(data)
-        self.current_analyzer.plot_data(self.figure, self.canvas)
-        stats = self.current_analyzer.calculate_statistics()
-        self.info_label.config(text=f"Вариант 3 - Температура | {stats}")
     
     def run_inflation_analysis(self):
         """Запуск анализа по варианту 10"""
