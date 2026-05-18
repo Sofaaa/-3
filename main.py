@@ -6,7 +6,7 @@ import pandas as pd
 
 from data_loader import DataLoader
 from population_analyzer import PopulationAnalyzer
-from inflation_analyzer import InflationAnalyzer  # WeatherAnalyzer удалён
+from inflation_analyzer import InflationAnalyzer  
 
 class MainApplication:
     def __init__(self, root):
@@ -32,7 +32,7 @@ class MainApplication:
         file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.root.quit)
         
-        # Меню Вариантов (только 5 и 10, без 3)
+        # Меню Вариантов 
         variants_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Анализ данных", menu=variants_menu)
         variants_menu.add_command(label="Вариант 5: Численность населения", 
