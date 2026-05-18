@@ -6,7 +6,7 @@ import pandas as pd
 
 from data_loader import DataLoader
 from population_analyzer import PopulationAnalyzer
-from inflation_analyzer import InflationAnalyzer  
+from inflation_analyzer import InflationAnalyzer
 
 class MainApplication:
     def __init__(self, root):
@@ -21,18 +21,15 @@ class MainApplication:
         self.setup_main_area()
     
     def setup_menu(self):
-        """Создание меню приложения"""
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
         
-        # Меню Файл
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Файл", menu=file_menu)
         file_menu.add_command(label="Открыть файл...", command=self.open_file)
         file_menu.add_separator()
         file_menu.add_command(label="Выход", command=self.root.quit)
         
-        # Меню Вариантов 
         variants_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Анализ данных", menu=variants_menu)
         variants_menu.add_command(label="Вариант 5: Численность населения", 
@@ -40,26 +37,21 @@ class MainApplication:
         variants_menu.add_command(label="Вариант 10: Инфляция", 
                                   command=self.run_inflation_analysis)
         
-        # Меню Прогноз
         forecast_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Прогноз", menu=forecast_menu)
         forecast_menu.add_command(label="Прогнозировать на N периодов...", 
                                   command=self.show_forecast_dialog)
         
-        # Меню Экспорт
         export_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Экспорт", menu=export_menu)
         export_menu.add_command(label="Сохранить график как PNG...", 
                                 command=self.export_chart)
     
     def setup_main_area(self):
-        """Основная область: таблица + график"""
-        # Верхняя панель с информацией
         self.info_label = tk.Label(self.root, text="Выберите вариант анализа из меню", 
                                    font=('Arial', 12, 'bold'))
         self.info_label.pack(pady=5)
         
-        # Рамка для таблицы
         table_frame = tk.Frame(self.root)
         table_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -69,7 +61,6 @@ class MainApplication:
         self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Рамка для графика
         chart_frame = tk.Frame(self.root)
         chart_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -78,7 +69,6 @@ class MainApplication:
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
     
     def display_table(self, df: pd.DataFrame):
-        """Отображение DataFrame в таблице"""
         for item in self.tree.get_children():
             self.tree.delete(item)
         
@@ -94,9 +84,8 @@ class MainApplication:
             self.tree.insert('', 'end', values=list(row))
     
     def open_file(self):
-        """Открыть пользовательский файл с данными"""
         filepath = filedialog.askopenfilename(
-            filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx"), ("JSON files", "*.json")]
+            filetypes=[("CSV files", "*.csv"), ("Excel files", "*.xlsx")]
         )
         if filepath:
             try:
@@ -105,7 +94,6 @@ class MainApplication:
                 elif filepath.endswith('.xlsx'):
                     self.current_data = pd.read_excel(filepath)
                 else:
-                    messagebox.showinfo("Информация", "Формат JSON требует ручной обработки")
                     return
                 
                 self.display_table(self.current_data)
@@ -114,7 +102,6 @@ class MainApplication:
                 messagebox.showerror("Ошибка", f"Не удалось загрузить файл: {e}")
     
     def run_population_analysis(self):
-        """Запуск анализа по варианту 5"""
         loader = DataLoader()
         data = loader.generate_sample_population()
         self.current_analyzer = PopulationAnalyzer(data)
@@ -125,7 +112,6 @@ class MainApplication:
         self.info_label.config(text=f"Вариант 5 - Численность населения | {stats}")
     
     def run_inflation_analysis(self):
-        """Запуск анализа по варианту 10"""
         loader = DataLoader()
         data = loader.generate_sample_inflation()
         self.current_analyzer = InflationAnalyzer(data)
@@ -136,7 +122,6 @@ class MainApplication:
         self.info_label.config(text=f"Вариант 10 - Инфляция | {stats}")
     
     def show_forecast_dialog(self):
-        """Диалог для ввода параметров прогноза"""
         if not self.current_analyzer:
             messagebox.showwarning("Предупреждение", "Сначала выберите вариант анализа")
             return
@@ -168,7 +153,6 @@ class MainApplication:
         tk.Button(dialog, text="Построить прогноз", command=run_forecast).pack(pady=20)
     
     def export_chart(self):
-        """Экспорт графика в файл"""
         if not self.current_analyzer:
             messagebox.showwarning("Предупреждение", "Сначала выберите вариант анализа")
             return
